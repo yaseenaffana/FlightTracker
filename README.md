@@ -1,184 +1,229 @@
-# Global Flight Tracker
+# ✈️ Flight Tracker
 
-A real-time global flight tracking web application built with React, Vite, Leaflet, and Spring Boot. Features interactive maps, flight search, follow mode, trail paths, and a secure backend API proxy.
+A real-time flight tracking web application that visualizes live aircraft positions on an interactive dark-themed world map. Built with React and powered by the [OpenSky Network API](https://opensky-network.org/).
 
-## Features
+> **Live Demo:** [https://flighttracker-777.web.app](https://flighttracker-777.web.app)
 
-### Frontend (React + Vite)
-- **Real-time Flight Data**: Live updates from OpenSky Network API
-- **Interactive Map**: Leaflet-powered map with flight markers
-- **Flight Search**: Search flights by callsign, ICAO, or airline
-- **Follow Mode**: Track specific flights with auto-centering
-- **Flight Trails**: Visualize flight paths with trail rendering
-- **Performance Optimized**: Icon caching, viewport filtering, efficient re-rendering
-- **Responsive UI**: Collapsible sidebar with flight details
+---
 
-### Backend (Spring Boot)
-- **Secure API Proxy**: Server-side authentication with OpenSky Network
-- **In-Memory Caching**: 25-second cache to reduce API calls
-- **Retry Logic**: Exponential backoff for failed requests
-- **CORS Support**: Configured for frontend integration
+## 📸 Screenshots
 
-## Tech Stack
+| Map View | Flight Details |
+|----------|----------------|
+| Real-time aircraft positions displayed as green plane icons on a dark CARTO basemap | Click any flight to see detailed info including airline, route, altitude, speed, and more |
 
-- **Frontend**: React 19.2.0, Vite, Leaflet 1.9.4, Axios
-- **Backend**: Spring Boot 3.2.1, Maven, Java 17+
-- **Mapping**: React-Leaflet, OpenStreetMap tiles
-- **Styling**: CSS modules, responsive design
+---
 
-## Quick Start
+## ✨ Features
+
+### Core
+- **Real-time Flight Tracking** — Live aircraft positions updated every 15 seconds via the OpenSky Network API
+- **Interactive Dark Map** — Beautiful dark-themed CARTO basemap with zoom and pan controls powered by Leaflet
+- **Flight Search** — Search flights by callsign (e.g., `AAL123`, `AI302`) with real-time filtering
+
+### Flight Information
+- **Detailed Popups** — Click any aircraft to see:
+  - Callsign, ICAO24 identifier, and origin country
+  - Aircraft type and manufacturer (e.g., Boeing 737, Airbus A320)
+  - Airline name and logo (fetched from Google Flights CDN)
+  - Departure and arrival airports
+  - Altitude (feet), speed (knots), heading, and vertical rate
+  - Squawk code with **emergency detection** (7500, 7600, 7700)
+  - Ground status and last contact time
+
+### Map Features
+- **Flight Following** — Select a flight to auto-follow it as it moves across the map
+- **Flight Trails** — Selected flights show a dashed green polyline trail of their last 20 positions
+- **Bounds-based Filtering** — Only flights within the current map viewport are listed in the sidebar
+- **Performance Optimized** — Canvas rendering, icon caching (rounded to 5° heading), and a 500-marker display limit
+
+### Sidebar
+- **Flight List Panel** — Collapsible sidebar showing all visible flights with:
+  - Airline logo, callsign, speed, altitude, and country of origin
+  - Dedicated detail card for the selected/followed flight
+- **Responsive Design** — Sidebar adapts to mobile screens with overlay behavior
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| **React 19** | UI framework with hooks-based architecture |
+| **Vite 7** | Build tool and dev server with HMR |
+| **Leaflet 1.9** + **React-Leaflet 5** | Interactive map rendering |
+| **Axios** | HTTP client for API calls with timeout and abort support |
+| **Prop-Types** | Runtime type checking for React components |
+| **CARTO Dark Basemap** | Dark-themed map tiles |
+
+### Backend (Optional — for local development)
+| Technology | Purpose |
+|------------|---------|
+| **Spring Boot 3.4** | Java backend framework |
+| **Java 17** | Runtime environment |
+| **Caffeine Cache** | In-memory caching for API responses |
+| **Spring Retry** | Automatic retry with exponential backoff |
+| **Maven** | Build and dependency management |
+
+### Deployment & Hosting
+| Technology | Purpose |
+|------------|---------|
+| **Firebase Hosting** | Static site hosting for the frontend |
+| **Firebase CLI** | Deployment tooling |
+| **GitHub Actions** | CI/CD pipeline for automatic deploys on merge to `main` |
+
+### External APIs
+| API | Purpose |
+|-----|---------|
+| [**OpenSky Network**](https://opensky-network.org/apidoc/) | Live flight state vectors, aircraft flights, and metadata |
+| [**Google Flights CDN**](https://www.gstatic.com/flights/airline_logos/) | Airline logo images |
+
+---
+
+## 📁 Project Structure
+
+```
+flight-tracker/
+├── index.html                  # Entry HTML with root div
+├── vite.config.js              # Vite config with backend proxy
+├── firebase.json               # Firebase Hosting config
+├── package.json                # Dependencies and scripts
+│
+├── src/
+│   ├── main.jsx                # App entry point
+│   ├── App.jsx                 # Root component with state management
+│   ├── index.css               # Global styles, theme, responsive design
+│   ├── App.css                 # Minimal app-specific styles
+│   │
+│   ├── components/
+│   │   ├── FlightMap.jsx       # Leaflet map with flight markers and trails
+│   │   ├── FlightMarker.jsx    # Individual aircraft marker with popup details
+│   │   ├── MapEvents.jsx       # Map interaction handler (bounds, follow)
+│   │   ├── Sidebar.jsx         # Flight list panel with detail card
+│   │   ├── SearchBar.jsx       # Callsign search input
+│   │   └── AirlineLogo.jsx     # Airline logo with text fallback
+│   │
+│   ├── hooks/
+│   │   ├── useFlights.js       # Polls OpenSky API for live flight data
+│   │   ├── useAircraftFlights.js  # Fetches flight history for an aircraft
+│   │   └── useAircraftMetadata.js # Fetches aircraft type/manufacturer info
+│   │
+│   └── utils/
+│       ├── airlineLogo.js      # ICAO/IATA code mapping and logo URL builder
+│       └── iconCache.js        # Cached Leaflet divIcon plane icons
+│
+├── backend/                    # Spring Boot backend (optional)
+│   ├── Dockerfile              # Multi-stage Docker build for deployment
+│   ├── pom.xml                 # Maven config with Spring Boot 3.4
+│   └── src/main/java/com/flighttracker/
+│       ├── FlightTrackerBackendApplication.java
+│       ├── controller/FlightController.java    # REST API endpoints
+│       ├── service/FlightDataService.java      # OpenSky API client with caching
+│       └── config/
+│           ├── OpenSkyConfig.java     # API credentials config
+│           ├── CorsConfig.java        # CORS settings
+│           ├── CacheConfig.java       # Caffeine cache setup
+│           └── RestTemplateConfig.java
+│
+└── .github/workflows/
+    ├── firebase-hosting-merge.yml       # Auto-deploy on push to main
+    └── firebase-hosting-pull-request.yml # Preview deploy on PR
+```
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- Java 17+
-- Maven 3.6+
-- OpenSky Network account (for backend)
+- **Node.js** 18+ and **npm**
+- (Optional) **Java 17** and **Maven 3.9+** for the backend
 
-### 1. Clone and Install Frontend
+### Installation
+
 ```bash
-git clone <repository-url>
+# Clone the repository
+git clone <your-repo-url>
 cd flight-tracker
+
+# Install frontend dependencies
 npm install
 ```
 
-### 2. Start Frontend (Development)
+### Running Locally
+
+**Frontend only (connects directly to OpenSky API):**
 ```bash
 npm run dev
 ```
-Frontend runs on `http://localhost:5173`
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 3. Setup Backend (Optional for Development)
+**With backend (adds caching and credential support):**
 ```bash
+# Terminal 1 — Start backend
 cd backend
-# Set environment variables
-export OPENSKY_CLIENT_ID=your_client_id
-export OPENSKY_CLIENT_SECRET=your_client_secret
-
-mvn clean install
 mvn spring-boot:run
-```
-Backend runs on `http://localhost:8080`
 
-### 4. Build for Production
+# Terminal 2 — Start frontend
+npm run dev
+```
+
+> **Note:** When using the backend, update `useFlights.js` to use `/api/flights` instead of the direct OpenSky URL. The Vite proxy will forward requests to `localhost:8080`.
+
+### Building for Production
+
 ```bash
 npm run build
 ```
 
-## Project Structure
+The production bundle is output to the `dist/` directory.
 
-```
-flight-tracker/
-├── src/
-│   ├── components/
-│   │   ├── FlightMap.jsx      # Main map component
-│   │   ├── FlightMarker.jsx   # Individual flight markers
-│   │   ├── MapEvents.jsx      # Map interaction handlers
-│   │   ├── SearchBar.jsx      # Flight search component
-│   │   └── Sidebar.jsx        # Flight details sidebar
-│   ├── hooks/
-│   │   └── useFlights.js      # Flight data fetching hook
-│   ├── utils/
-│   │   └── iconCache.js       # Icon caching utility
-│   ├── App.jsx                # Main application
-│   └── main.jsx               # React entry point
-├── backend/
-│   ├── src/main/java/com/flighttracker/
-│   │   ├── FlightController.java     # REST API endpoint
-│   │   ├── FlightDataService.java    # API proxy service
-│   │   ├── config/                   # Configuration classes
-│   │   └── FlightTrackerBackendApplication.java
-│   ├── src/test/                     # Unit tests
-│   ├── pom.xml                       # Maven configuration
-│   └── README.md                     # Backend documentation
-├── public/                           # Static assets
-├── package.json                      # Frontend dependencies
-└── vite.config.js                    # Vite configuration
-```
+### Deploying to Firebase
 
-## API Integration
-
-### OpenSky Network API
-The application uses the OpenSky Network API for real-time flight data:
-- **Endpoint**: `https://opensky-network.org/api/states/all`
-- **Data**: Global flight states including position, altitude, speed
-- **Rate Limit**: 400 requests/day for anonymous users, higher for authenticated
-
-### Backend Proxy
-For production security, the backend proxies API calls:
-- **Endpoint**: `GET /api/flights`
-- **Authentication**: Basic Auth with OpenSky credentials
-- **Caching**: 25-second in-memory cache
-- **Response**: Same JSON structure as OpenSky API
-
-## Key Components
-
-### FlightMap Component
-- Renders Leaflet map with OpenStreetMap tiles
-- Manages flight markers and viewport filtering
-- Handles map events (zoom, pan, click)
-
-### useFlights Hook
-- Fetches flight data from API (backend proxy in production)
-- Implements polling for real-time updates
-- Handles error states and retry logic
-
-### FlightMarker Component
-- Renders individual aircraft markers
-- Shows flight details on hover/click
-- Optimized with icon caching
-
-### Sidebar Component
-- Displays selected flight information
-- Collapsible design for better UX
-- Shows flight trail and follow mode controls
-
-## Performance Optimizations
-
-- **Icon Caching**: Pre-loads aircraft icons to prevent re-rendering
-- **Viewport Filtering**: Only renders flights visible on screen
-- **Efficient Updates**: React.memo and useMemo for component optimization
-- **API Caching**: Backend caches responses to reduce external API calls
-
-## Development
-
-### Frontend Scripts
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Run ESLint
+npm run build
+firebase deploy --only hosting
 ```
 
-### Backend Scripts
-```bash
-mvn clean install    # Build project
-mvn spring-boot:run  # Start application
-mvn test            # Run tests
-```
+---
 
-## Environment Variables
+## 🔌 API Reference
 
-### Backend
-```bash
-OPENSKY_CLIENT_ID=your_opensky_client_id
-OPENSKY_CLIENT_SECRET=your_opensky_client_secret
-```
+### OpenSky Network Endpoints Used
 
-## Contributing
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/states/all` | All current aircraft state vectors (position, speed, altitude, heading) |
+| `GET /api/flights/aircraft?icao24=...&begin=...&end=...` | Flight history for a specific aircraft |
+| `GET /api/metadata/aircraft/{icao24}` | Aircraft registration, type, and manufacturer info |
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Rate Limits
+- **Anonymous:** ~10 requests/minute, 15-second data resolution
+- **Authenticated:** Higher limits with OpenSky account credentials
 
-## License
+---
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 🎨 Design
 
-## Acknowledgments
+- **Dark theme** with glassmorphism effects and subtle gradients
+- **CSS custom properties** for consistent theming across light/dark modes
+- **Responsive layout** with mobile-optimized sidebar (overlay on small screens)
+- **Smooth transitions** on sidebar toggle, search focus, and map interactions
+- **Color palette:** Sky blue (`#38bdf8`) accent, violet (`#a78bfa`) for selections, green (`#34d399`) for success
 
-- [OpenSky Network](https://opensky-network.org/) for flight data
-- [Leaflet](https://leafletjs.com/) for mapping library
-- [React](https://reactjs.org/) for UI framework
-- [Vite](https://vitejs.dev/) for build tooling
+---
+
+## 📄 License
+
+This project is for educational and personal use. Flight data is provided by the [OpenSky Network](https://opensky-network.org/) under their usage terms.
+
+---
+
+## 🙏 Acknowledgments
+
+- [OpenSky Network](https://opensky-network.org/) — Free, open-source flight tracking data
+- [Leaflet](https://leafletjs.com/) — Open-source interactive maps
+- [CARTO](https://carto.com/) — Beautiful dark basemap tiles
+- [Google Flights](https://flights.google.com/) — Airline logo assets
+#   F l i g h t T r a c k e r  
+ 
