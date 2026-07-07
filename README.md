@@ -27,9 +27,11 @@ Users can:
 
 > Add your screenshots here.
 
-| World Map | Flight Details |
+| World Map |
 |-----------|----------------|
 | <img width="1920" height="920" alt="Screenshot 2026-02-21 133420" src="https://github.com/user-attachments/assets/ebe3b28b-a6dd-44e3-89c0-ffc2fc9d7a79" />
+| Flight Details |
+|-----------|----------------|
 | <img width="1920" height="915" alt="Screenshot 2026-02-21 133510" src="https://github.com/user-attachments/assets/82516c2e-1e8e-4afe-8bac-b33d95a81e0d" />
  |
 
